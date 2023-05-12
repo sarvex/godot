@@ -26,10 +26,7 @@ android_files = [
 
 env_android = env.Clone()
 
-android_objects = []
-for x in android_files:
-    android_objects.append(env_android.SharedObject(x))
-
+android_objects = [env_android.SharedObject(x) for x in android_files]
 env_thirdparty = env_android.Clone()
 env_thirdparty.disable_warnings()
 thirdparty_obj = env_thirdparty.SharedObject("#thirdparty/misc/ifaddrs-android.cc")
@@ -60,17 +57,17 @@ if lib_arch_dir != "":
     else:  # Release
         lib_type_dir = "release"
 
-    if env.editor_build:
-        lib_tools_dir = "tools/"
-    else:
-        lib_tools_dir = ""
-
-    out_dir = "#platform/android/java/lib/libs/" + lib_tools_dir + lib_type_dir + "/" + lib_arch_dir
+    lib_tools_dir = "tools/" if env.editor_build else ""
+    out_dir = f"#platform/android/java/lib/libs/{lib_tools_dir}{lib_type_dir}/{lib_arch_dir}"
     env_android.Command(
-        out_dir + "/libgodot_android.so", "#bin/libgodot" + env["SHLIBSUFFIX"], Move("$TARGET", "$SOURCE")
+        f"{out_dir}/libgodot_android.so",
+        "#bin/libgodot" + env["SHLIBSUFFIX"],
+        Move("$TARGET", "$SOURCE"),
     )
 
     stl_lib_path = (
         str(env["ANDROID_NDK_ROOT"]) + "/sources/cxx-stl/llvm-libc++/libs/" + lib_arch_dir + "/libc++_shared.so"
     )
-    env_android.Command(out_dir + "/libc++_shared.so", stl_lib_path, Copy("$TARGET", "$SOURCE"))
+    env_android.Command(
+        f"{out_dir}/libc++_shared.so", stl_lib_path, Copy("$TARGET", "$SOURCE")
+    )

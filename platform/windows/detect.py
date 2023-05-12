@@ -57,15 +57,7 @@ def can_build():
     if os.name == "nt":
         # Building natively on Windows
         # If VCINSTALLDIR is set in the OS environ, use traditional Godot logic to set up MSVC
-        if os.getenv("VCINSTALLDIR"):  # MSVC, manual setup
-            return True
-
-        # Otherwise, let SCons find MSVC if installed, or else MinGW.
-        # Since we're just returning True here, if there's no compiler
-        # installed, we'll get errors when it tries to build with the
-        # null compiler.
-        return True
-
+        return True if os.getenv("VCINSTALLDIR") else True
     if os.name == "posix":
         # Cross-compiling with MinGW-w64 (old MinGW32 is not supported)
         prefix = os.getenv("MINGW_PREFIX", "")
@@ -80,9 +72,9 @@ def get_mingw_bin_prefix(prefix, arch):
     if not prefix:
         mingw_bin_prefix = ""
     elif prefix[-1] != "/":
-        mingw_bin_prefix = prefix + "/bin/"
+        mingw_bin_prefix = f"{prefix}/bin/"
     else:
-        mingw_bin_prefix = prefix + "bin/"
+        mingw_bin_prefix = f"{prefix}bin/"
 
     if arch == "x86_64":
         mingw_bin_prefix += "x86_64-w64-mingw32-"
@@ -97,28 +89,28 @@ def get_mingw_bin_prefix(prefix, arch):
 
 
 def detect_build_env_arch():
-    msvc_target_aliases = {
-        "amd64": "x86_64",
-        "i386": "x86_32",
-        "i486": "x86_32",
-        "i586": "x86_32",
-        "i686": "x86_32",
-        "x86": "x86_32",
-        "x64": "x86_64",
-        "x86_64": "x86_64",
-        "arm": "arm32",
-        "arm64": "arm64",
-        "aarch64": "arm64",
-    }
     if os.getenv("VCINSTALLDIR") or os.getenv("VCTOOLSINSTALLDIR"):
+        msvc_target_aliases = {
+            "amd64": "x86_64",
+            "i386": "x86_32",
+            "i486": "x86_32",
+            "i586": "x86_32",
+            "i686": "x86_32",
+            "x86": "x86_32",
+            "x64": "x86_64",
+            "x86_64": "x86_64",
+            "arm": "arm32",
+            "arm64": "arm64",
+            "aarch64": "arm64",
+        }
         if os.getenv("Platform"):
             msvc_arch = os.getenv("Platform").lower()
-            if msvc_arch in msvc_target_aliases.keys():
+            if msvc_arch in msvc_target_aliases:
                 return msvc_target_aliases[msvc_arch]
 
         if os.getenv("VSCMD_ARG_TGT_ARCH"):
             msvc_arch = os.getenv("VSCMD_ARG_TGT_ARCH").lower()
-            if msvc_arch in msvc_target_aliases.keys():
+            if msvc_arch in msvc_target_aliases:
                 return msvc_target_aliases[msvc_arch]
 
         # Pre VS 2017 checks.
@@ -147,17 +139,17 @@ def detect_build_env_arch():
                 first_path_arch = os.getenv("PATH").split(";")[0].rsplit("\\", 1)[-1].lower()
                 return msvc_target_aliases[first_path_arch]
 
-    msys_target_aliases = {
-        "mingw32": "x86_32",
-        "mingw64": "x86_64",
-        "ucrt64": "x86_64",
-        "clang64": "x86_64",
-        "clang32": "x86_32",
-        "clangarm64": "arm64",
-    }
     if os.getenv("MSYSTEM"):
         msys_arch = os.getenv("MSYSTEM").lower()
-        if msys_arch in msys_target_aliases.keys():
+        msys_target_aliases = {
+            "mingw32": "x86_32",
+            "mingw64": "x86_64",
+            "ucrt64": "x86_64",
+            "clang64": "x86_64",
+            "clang32": "x86_32",
+            "clangarm64": "arm64",
+        }
+        if msys_arch in msys_target_aliases:
             return msys_target_aliases[msys_arch]
 
     return ""
@@ -234,7 +226,7 @@ def build_res_file(target, source, env):
 
         # Try generic executable (MSYS2).
         if not ok:
-            cmd = cmdbase + " -i " + str(source[x]) + " -o " + str(target[x])
+            cmd = f"{cmdbase} -i {str(source[x])} -o {str(target[x])}"
             try:
                 out = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
                 if len(out[1]):
@@ -259,7 +251,7 @@ def setup_msvc_manual(env):
         )
         sys.exit(200)
 
-    print("Found MSVC, arch %s" % (env_arch))
+    print(f"Found MSVC, arch {env_arch}")
 
 
 def setup_msvc_auto(env):
@@ -275,11 +267,7 @@ def setup_msvc_auto(env):
     # The rest we don't need to worry about because they are
     # aliases or aren't supported by Godot (itanium & ia64).
     msvc_arch_aliases = {"x86_32": "x86", "arm32": "arm"}
-    if env["arch"] in msvc_arch_aliases.keys():
-        env["TARGET_ARCH"] = msvc_arch_aliases[env["arch"]]
-    else:
-        env["TARGET_ARCH"] = env["arch"]
-
+    env["TARGET_ARCH"] = msvc_arch_aliases.get(env["arch"], env["arch"])
     # The env may have already been set up with default MSVC tools, so
     # reset a few things so we can set it up with the tools we want.
     # (Ideally we'd decide on the tool config before configuring any
@@ -295,7 +283,7 @@ def setup_msvc_auto(env):
     env.Tool("mssdk")  # we want the MS SDK
 
     # Note: actual compiler version can be found in env['MSVC_VERSION'], e.g. "14.1" for VS2015
-    print("Found MSVC version %s, arch %s" % (env["MSVC_VERSION"], env["arch"]))
+    print(f'Found MSVC version {env["MSVC_VERSION"]}, arch {env["arch"]}')
 
 
 def setup_mingw(env):
@@ -330,7 +318,7 @@ def setup_mingw(env):
         )
         sys.exit(202)
 
-    print("Using MinGW, arch %s" % (env["arch"]))
+    print(f'Using MinGW, arch {env["arch"]}')
 
 
 def configure_msvc(env, vcvars_msvc_config):
@@ -353,11 +341,10 @@ def configure_msvc(env, vcvars_msvc_config):
     if env["debug_crt"]:
         # Always use dynamic runtime, static debug CRT breaks thread_local.
         env.AppendUnique(CCFLAGS=["/MDd"])
+    elif env["use_static_cpp"]:
+        env.AppendUnique(CCFLAGS=["/MT"])
     else:
-        if env["use_static_cpp"]:
-            env.AppendUnique(CCFLAGS=["/MT"])
-        else:
-            env.AppendUnique(CCFLAGS=["/MD"])
+        env.AppendUnique(CCFLAGS=["/MD"])
 
     if env["arch"] == "x86_32":
         env["x86_libtheora_opt_vc"] = True
@@ -384,8 +371,8 @@ def configure_msvc(env, vcvars_msvc_config):
             "TYPED_METHOD_BIND",
             "WIN32",
             "MSVC",
-            "WINVER=%s" % env["target_win_version"],
-            "_WIN32_WINNT=%s" % env["target_win_version"],
+            f'WINVER={env["target_win_version"]}',
+            f'_WIN32_WINNT={env["target_win_version"]}',
         ]
     )
     env.AppendUnique(CPPDEFINES=["NOMINMAX"])  # disable bogus min/max WinDef.h macros
@@ -456,8 +443,8 @@ def configure_msvc(env, vcvars_msvc_config):
             env.AppendUnique(LINKFLAGS=["/LTCG"])
 
     if vcvars_msvc_config:
-        env.Prepend(CPPPATH=[p for p in os.getenv("INCLUDE").split(";")])
-        env.Append(LIBPATH=[p for p in os.getenv("LIB").split(";")])
+        env.Prepend(CPPPATH=list(os.getenv("INCLUDE").split(";")))
+        env.Append(LIBPATH=list(os.getenv("LIB").split(";")))
 
     # Sanitizers
     if env["use_asan"]:
@@ -469,7 +456,7 @@ def configure_msvc(env, vcvars_msvc_config):
     env["BUILDERS"]["ProgramOriginal"] = env["BUILDERS"]["Program"]
     env["BUILDERS"]["Program"] = methods.precious_program
 
-    env.AppendUnique(LINKFLAGS=["/STACK:" + str(STACK_SIZE)])
+    env.AppendUnique(LINKFLAGS=[f"/STACK:{str(STACK_SIZE)}"])
 
 
 def configure_mingw(env):
@@ -510,9 +497,8 @@ def configure_mingw(env):
             env.Append(LINKFLAGS=["-static"])
             env.Append(LINKFLAGS=["-static-libgcc"])
             env.Append(LINKFLAGS=["-static-libstdc++"])
-    else:
-        if env["use_static_cpp"]:
-            env.Append(LINKFLAGS=["-static"])
+    elif env["use_static_cpp"]:
+        env.Append(LINKFLAGS=["-static"])
 
     if env["arch"] in ["x86_32", "x86_64"]:
         env["x86_libtheora_opt_gcc"] = True
@@ -520,24 +506,24 @@ def configure_mingw(env):
     mingw_bin_prefix = get_mingw_bin_prefix(env["mingw_prefix"], env["arch"])
 
     if env["use_llvm"]:
-        env["CC"] = mingw_bin_prefix + "clang"
-        env["CXX"] = mingw_bin_prefix + "clang++"
+        env["CC"] = f"{mingw_bin_prefix}clang"
+        env["CXX"] = f"{mingw_bin_prefix}clang++"
         if try_cmd("as --version", env["mingw_prefix"], env["arch"]):
-            env["AS"] = mingw_bin_prefix + "as"
+            env["AS"] = f"{mingw_bin_prefix}as"
         if try_cmd("ar --version", env["mingw_prefix"], env["arch"]):
-            env["AR"] = mingw_bin_prefix + "ar"
+            env["AR"] = f"{mingw_bin_prefix}ar"
         if try_cmd("ranlib --version", env["mingw_prefix"], env["arch"]):
-            env["RANLIB"] = mingw_bin_prefix + "ranlib"
-        env.extra_suffix = ".llvm" + env.extra_suffix
+            env["RANLIB"] = f"{mingw_bin_prefix}ranlib"
+        env.extra_suffix = f".llvm{env.extra_suffix}"
     else:
-        env["CC"] = mingw_bin_prefix + "gcc"
-        env["CXX"] = mingw_bin_prefix + "g++"
+        env["CC"] = f"{mingw_bin_prefix}gcc"
+        env["CXX"] = f"{mingw_bin_prefix}g++"
         if try_cmd("as --version", env["mingw_prefix"], env["arch"]):
-            env["AS"] = mingw_bin_prefix + "as"
+            env["AS"] = f"{mingw_bin_prefix}as"
         if try_cmd("gcc-ar --version", env["mingw_prefix"], env["arch"]):
-            env["AR"] = mingw_bin_prefix + "gcc-ar"
+            env["AR"] = f"{mingw_bin_prefix}gcc-ar"
         if try_cmd("gcc-ranlib --version", env["mingw_prefix"], env["arch"]):
-            env["RANLIB"] = mingw_bin_prefix + "gcc-ranlib"
+            env["RANLIB"] = f"{mingw_bin_prefix}gcc-ranlib"
 
     ## LTO
 
@@ -558,7 +544,7 @@ def configure_mingw(env):
             env.Append(CCFLAGS=["-flto"])
             env.Append(LINKFLAGS=["-flto"])
 
-    env.Append(LINKFLAGS=["-Wl,--stack," + str(STACK_SIZE)])
+    env.Append(LINKFLAGS=[f"-Wl,--stack,{str(STACK_SIZE)}"])
 
     ## Compile flags
 
@@ -623,8 +609,7 @@ def configure(env: "Environment"):
     supported_arches = ["x86_32", "x86_64", "arm32", "arm64"]
     if env["arch"] not in supported_arches:
         print(
-            'Unsupported CPU architecture "%s" for Windows. Supported architectures are: %s.'
-            % (env["arch"], ", ".join(supported_arches))
+            f'Unsupported CPU architecture "{env["arch"]}" for Windows. Supported architectures are: {", ".join(supported_arches)}.'
         )
         sys.exit()
 

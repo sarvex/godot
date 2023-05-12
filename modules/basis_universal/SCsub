@@ -31,8 +31,10 @@ encoder_sources = [
     "jpgd.cpp",
     "pvpngreader.cpp",
 ]
-encoder_sources = [thirdparty_dir + "encoder/" + file for file in encoder_sources]
-transcoder_sources = [thirdparty_dir + "transcoder/basisu_transcoder.cpp"]
+encoder_sources = [
+    f"{thirdparty_dir}encoder/{file}" for file in encoder_sources
+]
+transcoder_sources = [f"{thirdparty_dir}transcoder/basisu_transcoder.cpp"]
 
 # Treat Basis headers as system headers to avoid raising warnings. Not supported on MSVC.
 if not env.msvc:

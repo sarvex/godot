@@ -106,15 +106,13 @@ overall_progress_description_weight = 10
 
 def validate_tag(elem: ET.Element, tag: str) -> None:
     if elem.tag != tag:
-        print('Tag mismatch, expected "' + tag + '", got ' + elem.tag)
+        print(f'Tag mismatch, expected "{tag}", got {elem.tag}')
         sys.exit(255)
 
 
 def color(color: str, string: str) -> str:
     if flags["c"] and terminal_supports_color():
-        color_format = ""
-        for code in colors[color]:
-            color_format += "\033[" + str(code) + "m"
+        color_format = "".join("\033[" + str(code) + "m" for code in colors[color])
         return color_format + string + "\033[0m"
     else:
         return string
@@ -132,9 +130,7 @@ def terminal_supports_color():
     supported_platform = p != "Pocket PC" and (p != "win32" or "ANSICON" in os.environ)
 
     is_a_tty = hasattr(sys.stdout, "isatty") and sys.stdout.isatty()
-    if not supported_platform or not is_a_tty:
-        return False
-    return True
+    return bool(supported_platform and is_a_tty)
 
 
 ################################################################################
@@ -224,9 +220,7 @@ class ClassStatus:
         return sum < 1
 
     def make_output(self) -> Dict[str, str]:
-        output: Dict[str, str] = {}
-        output["name"] = color("name", self.name)
-
+        output: Dict[str, str] = {"name": color("name", self.name)}
         ok_string = color("part_good", "OK")
         missing_string = color("part_big_problem", "MISSING")
 
@@ -284,13 +278,10 @@ class ClassStatus:
                     status.progresses[tag.tag].increment(increment)
             elif tag.tag in ["constants", "members", "theme_items"]:
                 for sub_tag in list(tag):
-                    if not sub_tag.text is None:
+                    if sub_tag.text is not None:
                         status.progresses[tag.tag].increment(len(sub_tag.text.strip()) > 0)
 
-            elif tag.tag in ["tutorials"]:
-                pass  # Ignore those tags for now
-
-            else:
+            elif tag.tag not in ["tutorials"]:
                 print(tag.tag, tag.attrib)
 
         return status

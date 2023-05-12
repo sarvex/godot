@@ -38,19 +38,13 @@ def generate_mod_version(argcount, const=False, returns=False):
             funcargs += ", "
             callargs += ", "
 
-        argtext += ", m_type" + str(i + 1)
-        funcargs += "m_type" + str(i + 1) + " arg" + str(i + 1)
-        callargs += "arg" + str(i + 1)
+        argtext += f", m_type{str(i + 1)}"
+        funcargs += f"m_type{str(i + 1)} arg{str(i + 1)}"
+        callargs += f"arg{str(i + 1)}"
 
-    if argcount:
-        s = s.replace("$ARG", argtext)
-        s = s.replace("$FUNCARGS", funcargs)
-        s = s.replace("$CALLARGS", callargs)
-    else:
-        s = s.replace("$ARG", "")
-        s = s.replace("$FUNCARGS", funcargs)
-        s = s.replace("$CALLARGS", callargs)
-
+    s = s.replace("$ARG", argtext) if argcount else s.replace("$ARG", "")
+    s = s.replace("$FUNCARGS", funcargs)
+    s = s.replace("$CALLARGS", callargs)
     return s
 
 
@@ -97,24 +91,14 @@ def generate_ex_version(argcount, const=False, returns=False):
         if i > 0:
             funcargs += ", "
 
-        argtext += ", m_type" + str(i + 1)
-        funcargs += "m_type" + str(i + 1) + " arg" + str(i + 1)
-        callargs += ", arg" + str(i + 1)
+        argtext += f", m_type{str(i + 1)}"
+        funcargs += f"m_type{str(i + 1)} arg{str(i + 1)}"
+        callargs += f", arg{str(i + 1)}"
 
-    if argcount:
-        s = s.replace("$ARG", argtext)
-        s = s.replace("$FUNCARGS", funcargs)
-        s = s.replace("$CALLARGS", callargs)
-    else:
-        s = s.replace("$ARG", "")
-        s = s.replace("$FUNCARGS", funcargs)
-        s = s.replace("$CALLARGS", callargs)
-
-    if returns:
-        s = s.replace("$RETREF", ", ret")
-    else:
-        s = s.replace("$RETREF", "")
-
+    s = s.replace("$ARG", argtext) if argcount else s.replace("$ARG", "")
+    s = s.replace("$FUNCARGS", funcargs)
+    s = s.replace("$CALLARGS", callargs)
+    s = s.replace("$RETREF", ", ret") if returns else s.replace("$RETREF", "")
     return s
 
 

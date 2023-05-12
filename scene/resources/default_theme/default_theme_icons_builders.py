@@ -26,7 +26,7 @@ def make_default_theme_icons_action(target, source, env):
         with open(fname, "rb") as svgf:
             b = svgf.read(1)
             while len(b) == 1:
-                icons_string.write("\\" + str(hex(ord(b)))[1:])
+                icons_string.write("\\" + hex(ord(b))[1:])
                 b = svgf.read(1)
 
         icons_string.write('"')
@@ -39,7 +39,7 @@ def make_default_theme_icons_action(target, source, env):
     s.write('#include "modules/modules_enabled.gen.h"\n\n')
     s.write("#ifndef _DEFAULT_THEME_ICONS_H\n")
     s.write("#define _DEFAULT_THEME_ICONS_H\n")
-    s.write("static const int default_theme_icons_count = {};\n\n".format(len(svg_icons)))
+    s.write(f"static const int default_theme_icons_count = {len(svg_icons)};\n\n")
     s.write("#ifdef MODULE_SVG_ENABLED\n")
     s.write("static const char *default_theme_icons_sources[] = {\n")
     s.write(icons_string.getvalue())
@@ -47,9 +47,7 @@ def make_default_theme_icons_action(target, source, env):
     s.write("#endif // MODULE_SVG_ENABLED\n\n")
     s.write("static const char *default_theme_icons_names[] = {\n")
 
-    index = 0
     for f in svg_icons:
-
         fname = str(f)
 
         # Trim the `.svg` extension from the string.
@@ -60,8 +58,6 @@ def make_default_theme_icons_action(target, source, env):
         if fname != svg_icons[-1]:
             s.write(",")
         s.write("\n")
-
-        index += 1
 
     s.write("};\n")
 

@@ -10,18 +10,21 @@ import editor_builders
 
 
 def _make_doc_data_class_path(to_path):
-    # NOTE: It is safe to generate this file here, since this is still executed serially
-    g = open(os.path.join(to_path, "doc_data_class_path.gen.h"), "w", encoding="utf-8")
-    g.write("static const int _doc_data_class_path_count = " + str(len(env.doc_class_path)) + ";\n")
-    g.write("struct _DocDataClassPath { const char* name; const char* path; };\n")
+    with open(os.path.join(to_path, "doc_data_class_path.gen.h"), "w", encoding="utf-8") as g:
+        g.write(
+            f"static const int _doc_data_class_path_count = {len(env.doc_class_path)}"
+            + ";\n"
+        )
+        g.write("struct _DocDataClassPath { const char* name; const char* path; };\n")
 
-    g.write("static const _DocDataClassPath _doc_data_class_paths[" + str(len(env.doc_class_path) + 1) + "] = {\n")
-    for c in sorted(env.doc_class_path):
-        g.write('\t{"' + c + '", "' + env.doc_class_path[c] + '"},\n')
-    g.write("\t{nullptr, nullptr}\n")
-    g.write("};\n")
-
-    g.close()
+        g.write(
+            f"static const _DocDataClassPath _doc_data_class_paths[{str(len(env.doc_class_path) + 1)}"
+            + "] = {\n"
+        )
+        for c in sorted(env.doc_class_path):
+            g.write('\t{"' + c + '", "' + env.doc_class_path[c] + '"},\n')
+        g.write("\t{nullptr, nullptr}\n")
+        g.write("};\n")
 
 
 if env.editor_build:
@@ -30,11 +33,11 @@ if env.editor_build:
     reg_exporters = "void register_exporters() {\n"
     for e in env.platform_exporters:
         # Glob all .cpp files in export folder
-        files = Glob("#platform/" + e + "/export/" + "*.cpp")
+        files = Glob(f"#platform/{e}/export/*.cpp")
         env.add_source_files(env.editor_sources, files)
 
         reg_exporters += "\tregister_" + e + "_exporter();\n"
-        reg_exporters_inc += '#include "platform/' + e + '/export/export.h"\n'
+        reg_exporters_inc += f'#include "platform/{e}' + '/export/export.h"\n'
     reg_exporters += "}\n\n"
     reg_exporters += "void register_exporter_types() {\n"
     for e in env.platform_exporters:
@@ -57,11 +60,7 @@ if env.editor_build:
             module_dirs.append(d)
 
     for d in module_dirs:
-        if not os.path.isabs(d):
-            docs += Glob("#" + d + "/*.xml")  # Built-in.
-        else:
-            docs += Glob(d + "/*.xml")  # Custom.
-
+        docs += Glob(f"#{d}/*.xml") if not os.path.isabs(d) else Glob(f"{d}/*.xml")
     _make_doc_data_class_path(env.Dir("#editor").abspath)
 
     docs = sorted(docs)

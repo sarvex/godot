@@ -10,10 +10,10 @@ reg_apis = "void register_platform_apis() {\n"
 unreg_apis = "void unregister_platform_apis() {\n"
 for platform in env.platform_apis:
     platform_dir = env.Dir(platform)
-    env.add_source_files(env.platform_sources, platform + "/api/api.cpp")
+    env.add_source_files(env.platform_sources, f"{platform}/api/api.cpp")
     reg_apis += "\tregister_" + platform + "_api();\n"
     unreg_apis += "\tunregister_" + platform + "_api();\n"
-    reg_apis_inc += '#include "' + platform + '/api/api.h"\n'
+    reg_apis_inc += f'#include "{platform}' + '/api/api.h"\n'
 reg_apis_inc += "\n"
 reg_apis += "}\n\n"
 unreg_apis += "}\n"

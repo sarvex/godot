@@ -15,8 +15,10 @@ def find_dotnet_cli():
             hint_path = os.path.join(hint_dir, "dotnet")
             if os.path.isfile(hint_path) and os.access(hint_path, os.X_OK):
                 return hint_path
-            if os.path.isfile(hint_path + ".exe") and os.access(hint_path + ".exe", os.X_OK):
-                return hint_path + ".exe"
+            if os.path.isfile(f"{hint_path}.exe") and os.access(
+                f"{hint_path}.exe", os.X_OK
+            ):
+                return f"{hint_path}.exe"
     else:
         for hint_dir in os.environ["PATH"].split(os.pathsep):
             hint_dir = hint_dir.strip('"')
@@ -26,9 +28,7 @@ def find_dotnet_cli():
 
 
 def find_msbuild_standalone_windows():
-    msbuild_tools_path = find_msbuild_tools_path_reg()
-
-    if msbuild_tools_path:
+    if msbuild_tools_path := find_msbuild_tools_path_reg():
         return os.path.join(msbuild_tools_path, "MSBuild.exe")
 
     return None
@@ -40,10 +40,7 @@ def find_msbuild_mono_windows(mono_prefix):
     mono_bin_dir = os.path.join(mono_prefix, "bin")
     msbuild_mono = os.path.join(mono_bin_dir, "msbuild.bat")
 
-    if os.path.isfile(msbuild_mono):
-        return msbuild_mono
-
-    return None
+    return msbuild_mono if os.path.isfile(msbuild_mono) else None
 
 
 def find_msbuild_mono_unix():
@@ -60,16 +57,18 @@ def find_msbuild_mono_unix():
         hint_path = os.path.join(hint_dir, "msbuild")
         if os.path.isfile(hint_path):
             return hint_path
-        elif os.path.isfile(hint_path + ".exe"):
-            return hint_path + ".exe"
+        elif os.path.isfile(f"{hint_path}.exe"):
+            return f"{hint_path}.exe"
 
     for hint_dir in os.environ["PATH"].split(os.pathsep):
         hint_dir = hint_dir.strip('"')
         hint_path = os.path.join(hint_dir, "msbuild")
         if os.path.isfile(hint_path) and os.access(hint_path, os.X_OK):
             return hint_path
-        if os.path.isfile(hint_path + ".exe") and os.access(hint_path + ".exe", os.X_OK):
-            return hint_path + ".exe"
+        if os.path.isfile(f"{hint_path}.exe") and os.access(
+            f"{hint_path}.exe", os.X_OK
+        ):
+            return f"{hint_path}.exe"
 
     return None
 
@@ -108,7 +107,7 @@ def find_msbuild_tools_path_reg():
 
         raise ValueError("Cannot find `installationPath` entry")
     except ValueError as e:
-        print("Error reading output from vswhere: " + str(e))
+        print(f"Error reading output from vswhere: {str(e)}")
     except OSError:
         pass  # Fine, vswhere not found
     except (subprocess.CalledProcessError, OSError):
@@ -124,30 +123,22 @@ class ToolsLocation:
 
 
 def find_any_msbuild_tool(mono_prefix):
-    # Preference order: dotnet CLI > Standalone MSBuild > Mono's MSBuild
-
-    # Find dotnet CLI
-    dotnet_cli = find_dotnet_cli()
-    if dotnet_cli:
+    if dotnet_cli := find_dotnet_cli():
         return ToolsLocation(dotnet_cli=dotnet_cli)
 
     # Find standalone MSBuild
     if os.name == "nt":
-        msbuild_standalone = find_msbuild_standalone_windows()
-        if msbuild_standalone:
+        if msbuild_standalone := find_msbuild_standalone_windows():
             return ToolsLocation(msbuild_standalone=msbuild_standalone)
 
     if mono_prefix:
         # Find Mono's MSBuild
         if os.name == "nt":
             msbuild_mono = find_msbuild_mono_windows(mono_prefix)
-            if msbuild_mono:
-                return ToolsLocation(msbuild_mono=msbuild_mono)
         else:
             msbuild_mono = find_msbuild_mono_unix()
-            if msbuild_mono:
-                return ToolsLocation(msbuild_mono=msbuild_mono)
-
+        if msbuild_mono:
+            return ToolsLocation(msbuild_mono=msbuild_mono)
     return None
 
 
@@ -182,13 +173,11 @@ def run_msbuild(tools: ToolsLocation, sln: str, msbuild_args: Optional[List[str]
         # The (Csc/Vbc/Fsc)ToolExe environment variables are required when
         # building with Mono's MSBuild. They must point to the batch files
         # in Mono's bin directory to make sure they are executed with Mono.
-        msbuild_env.update(
-            {
-                "CscToolExe": os.path.join(tools.mono_bin_dir, "csc.bat"),
-                "VbcToolExe": os.path.join(tools.mono_bin_dir, "vbc.bat"),
-                "FscToolExe": os.path.join(tools.mono_bin_dir, "fsharpc.bat"),
-            }
-        )
+        msbuild_env |= {
+            "CscToolExe": os.path.join(tools.mono_bin_dir, "csc.bat"),
+            "VbcToolExe": os.path.join(tools.mono_bin_dir, "vbc.bat"),
+            "FscToolExe": os.path.join(tools.mono_bin_dir, "fsharpc.bat"),
+        }
 
     return subprocess.call(args, env=msbuild_env)
 
@@ -211,9 +200,17 @@ def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, pre
 
         targets = [os.path.join(editor_api_dir, filename) for filename in target_filenames]
 
-        args = ["/restore", "/t:Build", "/p:Configuration=" + build_config, "/p:NoWarn=1591"]
+        args = [
+            "/restore",
+            "/t:Build",
+            f"/p:Configuration={build_config}",
+            "/p:NoWarn=1591",
+        ]
         if push_nupkgs_local:
-            args += ["/p:ClearNuGetLocalCache=true", "/p:PushNuGetToLocalSource=" + push_nupkgs_local]
+            args += [
+                "/p:ClearNuGetLocalCache=true",
+                f"/p:PushNuGetToLocalSource={push_nupkgs_local}",
+            ]
         if precision == "double":
             args += ["/p:GodotFloat64=true"]
 
@@ -280,11 +277,10 @@ def generate_sdk_package_versions():
         # "beta" and "3" to follow SemVer 2.0.
         import re
 
-        match = re.search(r"[\d]+$", version_status)
-        if match:
+        if match := re.search(r"[\d]+$", version_status):
             pos = match.start()
-            version_status = version_status[:pos] + "." + version_status[pos:]
-        version_str += "-" + version_status
+            version_status = f"{version_status[:pos]}.{version_status[pos:]}"
+        version_str += f"-{version_status}"
 
     props = """<Project>
   <PropertyGroup>
@@ -314,11 +310,16 @@ def build_all(msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, p
 
     # GodotTools
     sln = os.path.join(module_dir, "editor/GodotTools/GodotTools.sln")
-    args = ["/restore", "/t:Build", "/p:Configuration=" + ("Debug" if dev_debug else "Release")] + (
-        ["/p:GodotPlatform=" + godot_platform] if godot_platform else []
-    )
+    args = [
+        "/restore",
+        "/t:Build",
+        "/p:Configuration=" + ("Debug" if dev_debug else "Release"),
+    ] + ([f"/p:GodotPlatform={godot_platform}"] if godot_platform else [])
     if push_nupkgs_local:
-        args += ["/p:ClearNuGetLocalCache=true", "/p:PushNuGetToLocalSource=" + push_nupkgs_local]
+        args += [
+            "/p:ClearNuGetLocalCache=true",
+            f"/p:PushNuGetToLocalSource={push_nupkgs_local}",
+        ]
     if precision == "double":
         args += ["/p:GodotFloat64=true"]
     exit_code = run_msbuild(msbuild_tool, sln=sln, msbuild_args=args)
@@ -328,15 +329,15 @@ def build_all(msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, p
     # Godot.NET.Sdk
     args = ["/restore", "/t:Build", "/p:Configuration=Release"]
     if push_nupkgs_local:
-        args += ["/p:ClearNuGetLocalCache=true", "/p:PushNuGetToLocalSource=" + push_nupkgs_local]
+        args += [
+            "/p:ClearNuGetLocalCache=true",
+            f"/p:PushNuGetToLocalSource={push_nupkgs_local}",
+        ]
     if precision == "double":
         args += ["/p:GodotFloat64=true"]
     sln = os.path.join(module_dir, "editor/Godot.NET.Sdk/Godot.NET.Sdk.sln")
     exit_code = run_msbuild(msbuild_tool, sln=sln, msbuild_args=args)
-    if exit_code != 0:
-        return exit_code
-
-    return 0
+    return exit_code if exit_code != 0 else 0
 
 
 def main():

@@ -27,9 +27,5 @@ if env["opengl3"]:
     env.Append(CPPDEFINES=["GLAD_GLX_NO_X11"])
     source_files.append(["gl_manager_x11.cpp", "detect_prime_x11.cpp", "#thirdparty/glad/glx.c"])
 
-objects = []
-
-for source_file in source_files:
-    objects.append(env.Object(source_file))
-
+objects = [env.Object(source_file) for source_file in source_files]
 Return("objects")

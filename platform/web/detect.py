@@ -79,8 +79,7 @@ def configure(env: "Environment"):
     supported_arches = ["wasm32"]
     if env["arch"] not in supported_arches:
         print(
-            'Unsupported CPU architecture "%s" for iOS. Supported architectures are: %s.'
-            % (env["arch"], ", ".join(supported_arches))
+            f'Unsupported CPU architecture "{env["arch"]}" for iOS. Supported architectures are: {", ".join(supported_arches)}.'
         )
         sys.exit()
 
@@ -108,7 +107,7 @@ def configure(env: "Environment"):
     else:
         env.Append(CPPFLAGS=["-fno-exceptions"])
 
-    env.Append(LINKFLAGS=["-s", "INITIAL_MEMORY=%sMB" % env["initial_memory"]])
+    env.Append(LINKFLAGS=["-s", f'INITIAL_MEMORY={env["initial_memory"]}MB'])
 
     ## Copy env variables.
     env["ENV"] = os.environ
@@ -215,7 +214,7 @@ def configure(env: "Environment"):
 
         env.Append(CCFLAGS=["-s", "SIDE_MODULE=2"])
         env.Append(LINKFLAGS=["-s", "SIDE_MODULE=2"])
-        env.extra_suffix = ".dlink" + env.extra_suffix
+        env.extra_suffix = f".dlink{env.extra_suffix}"
 
     # Reduce code size by generating less support code (e.g. skip NodeJS support).
     env.Append(LINKFLAGS=["-s", "ENVIRONMENT=web,worker"])

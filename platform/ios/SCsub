@@ -36,7 +36,8 @@ def combine_libs(target=None, source=None, env=None):
     else:
         libtool = "$IOS_TOOLCHAIN_PATH/usr/bin/libtool"
     env.Execute(
-        libtool + ' -static -o "' + lib_path + '" ' + " ".join([('"' + lib.srcnode().abspath + '"') for lib in source])
+        f'{libtool} -static -o "{lib_path}" '
+        + " ".join([f'"{lib.srcnode().abspath}"' for lib in source])
     )
 
 

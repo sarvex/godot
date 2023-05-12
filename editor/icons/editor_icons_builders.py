@@ -25,7 +25,7 @@ def make_editor_icons_action(target, source, env):
         with open(fname, "rb") as svgf:
             b = svgf.read(1)
             while len(b) == 1:
-                icons_string.write("\\" + str(hex(ord(b)))[1:])
+                icons_string.write("\\" + hex(ord(b))[1:])
                 b = svgf.read(1)
 
         icons_string.write('"')
@@ -37,7 +37,7 @@ def make_editor_icons_action(target, source, env):
     s.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
     s.write("#ifndef _EDITOR_ICONS_H\n")
     s.write("#define _EDITOR_ICONS_H\n")
-    s.write("static const int editor_icons_count = {};\n".format(len(svg_icons)))
+    s.write(f"static const int editor_icons_count = {len(svg_icons)};\n")
     s.write("static const char *editor_icons_sources[] = {\n")
     s.write(icons_string.getvalue())
     s.write("};\n\n")
@@ -46,8 +46,7 @@ def make_editor_icons_action(target, source, env):
     # this is used to store the indices of thumbnail icons
     thumb_medium_indices = []
     thumb_big_indices = []
-    index = 0
-    for f in svg_icons:
+    for index, f in enumerate(svg_icons):
 
         fname = str(f)
 
@@ -67,19 +66,21 @@ def make_editor_icons_action(target, source, env):
             s.write(",")
         s.write("\n")
 
-        index += 1
-
     s.write("};\n")
 
     if thumb_medium_indices:
         s.write("\n\n")
-        s.write("static const int editor_md_thumbs_count = {};\n".format(len(thumb_medium_indices)))
+        s.write(
+            f"static const int editor_md_thumbs_count = {len(thumb_medium_indices)};\n"
+        )
         s.write("static const int editor_md_thumbs_indices[] = {")
         s.write(", ".join(thumb_medium_indices))
         s.write("};\n")
     if thumb_big_indices:
         s.write("\n\n")
-        s.write("static const int editor_bg_thumbs_count = {};\n".format(len(thumb_big_indices)))
+        s.write(
+            f"static const int editor_bg_thumbs_count = {len(thumb_big_indices)};\n"
+        )
         s.write("static const int editor_bg_thumbs_indices[] = {")
         s.write(", ".join(thumb_big_indices))
         s.write("};\n")

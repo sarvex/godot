@@ -5,8 +5,12 @@ from SCons.Util import WhereIs
 
 def run_closure_compiler(target, source, env, for_signature):
     closure_bin = os.path.join(os.path.dirname(WhereIs("emcc")), "node_modules", ".bin", "google-closure-compiler")
-    cmd = [WhereIs("node"), closure_bin]
-    cmd.extend(["--compilation_level", "ADVANCED_OPTIMIZATIONS"])
+    cmd = [
+        WhereIs("node"),
+        closure_bin,
+        "--compilation_level",
+        "ADVANCED_OPTIMIZATIONS",
+    ]
     for f in env["JSEXTERNS"]:
         cmd.extend(["--externs", f.get_abspath()])
     for f in source:
@@ -27,7 +31,7 @@ def get_build_version():
     status = version.status
     if os.getenv("GODOT_VERSION_STATUS") != None:
         status = str(os.getenv("GODOT_VERSION_STATUS"))
-    v += ".%s.%s" % (status, name)
+    v += f".{status}.{name}"
     return v
 
 
@@ -47,15 +51,15 @@ def create_template_zip(env, js, wasm, worker, side):
         "#platform/web/js/libs/audio.worklet.js",
     ]
     out_files = [
-        zip_dir.File(binary_name + ".js"),
-        zip_dir.File(binary_name + ".wasm"),
-        zip_dir.File(binary_name + ".worker.js"),
-        zip_dir.File(binary_name + ".audio.worklet.js"),
+        zip_dir.File(f"{binary_name}.js"),
+        zip_dir.File(f"{binary_name}.wasm"),
+        zip_dir.File(f"{binary_name}.worker.js"),
+        zip_dir.File(f"{binary_name}.audio.worklet.js"),
     ]
     # Dynamic linking (extensions) specific.
     if env["dlink_enabled"]:
         in_files.append(side)  # Side wasm (contains the actual Godot code).
-        out_files.append(zip_dir.File(binary_name + ".side.wasm"))
+        out_files.append(zip_dir.File(f"{binary_name}.side.wasm"))
 
     service_worker = "#misc/dist/html/service-worker.js"
     if env.editor_build:
@@ -80,7 +84,7 @@ def create_template_zip(env, js, wasm, worker, side):
         }
         html = env.Substfile(target="#bin/godot${PROGSUFFIX}.html", source=html, SUBST_DICT=subst_dict)
         in_files.append(html)
-        out_files.append(zip_dir.File(binary_name + ".html"))
+        out_files.append(zip_dir.File(f"{binary_name}.html"))
         # And logo/favicon
         in_files.append("#misc/dist/html/logo.svg")
         out_files.append(zip_dir.File("logo.svg"))
@@ -99,9 +103,9 @@ def create_template_zip(env, js, wasm, worker, side):
     else:
         # HTML
         in_files.append("#misc/dist/html/full-size.html")
-        out_files.append(zip_dir.File(binary_name + ".html"))
+        out_files.append(zip_dir.File(f"{binary_name}.html"))
         in_files.append(service_worker)
-        out_files.append(zip_dir.File(binary_name + ".service.worker.js"))
+        out_files.append(zip_dir.File(f"{binary_name}.service.worker.js"))
         in_files.append("#misc/dist/html/offline-export.html")
         out_files.append(zip_dir.File("godot.offline.html"))
 

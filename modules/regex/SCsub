@@ -55,7 +55,7 @@ if env["builtin_pcre2"]:
     def pcre2_builtin(width):
         env_pcre2 = env_regex.Clone()
         env_pcre2.disable_warnings()
-        env_pcre2["OBJSUFFIX"] = "_" + width + env_pcre2["OBJSUFFIX"]
+        env_pcre2["OBJSUFFIX"] = f"_{width}" + env_pcre2["OBJSUFFIX"]
         env_pcre2.Append(CPPDEFINES=[("PCRE2_CODE_UNIT_WIDTH", width)])
         env_pcre2.add_source_files(thirdparty_obj, thirdparty_sources)
 

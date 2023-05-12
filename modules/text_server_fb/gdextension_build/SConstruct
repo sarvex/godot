@@ -248,11 +248,17 @@ if env["freetype_enabled"]:
         ]
         thirdparty_freetype_sources += [thirdparty_brotli_dir + file for file in thirdparty_brotli_sources]
         env_freetype.Append(CPPDEFINES=["FT_CONFIG_OPTION_USE_BROTLI"])
-        env_freetype.Prepend(CPPPATH=[thirdparty_brotli_dir + "include"])
+        env_freetype.Prepend(CPPPATH=[f"{thirdparty_brotli_dir}include"])
         env.Append(CPPDEFINES=["FT_CONFIG_OPTION_USE_BROTLI"])
 
-    env_freetype.Append(CPPPATH=[thirdparty_freetype_dir + "/include", thirdparty_zlib_dir, thirdparty_png_dir])
-    env.Append(CPPPATH=[thirdparty_freetype_dir + "/include"])
+    env_freetype.Append(
+        CPPPATH=[
+            f"{thirdparty_freetype_dir}/include",
+            thirdparty_zlib_dir,
+            thirdparty_png_dir,
+        ]
+    )
+    env.Append(CPPPATH=[f"{thirdparty_freetype_dir}/include"])
 
     env_freetype.Append(
         CPPDEFINES=[

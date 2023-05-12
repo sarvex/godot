@@ -294,7 +294,7 @@ class State:
 
                 theme_item_name = theme_item.attrib["name"]
                 theme_item_data_name = theme_item.attrib["data_type"]
-                theme_item_id = "{}_{}".format(theme_item_data_name, theme_item_name)
+                theme_item_id = f"{theme_item_data_name}_{theme_item_name}"
                 if theme_item_id in class_def.theme_items:
                     print_error(
                         f'{class_name}.xml: Duplicate theme item "{theme_item_name}" of type "{theme_item_data_name}".',
@@ -542,7 +542,10 @@ def main() -> None:
     # Retrieve heading translations for the given language.
     if not args.dry_run and args.lang != "en":
         lang_file = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), "..", "translations", "{}.po".format(args.lang)
+            os.path.dirname(os.path.realpath(__file__)),
+            "..",
+            "translations",
+            f"{args.lang}.po",
         )
         if os.path.exists(lang_file):
             try:
@@ -715,8 +718,7 @@ def get_class_group(class_def: ClassDef, state: State) -> str:
                 group_name = "object"
                 break
 
-            inode = state.classes[inherits].inherits
-            if inode:
+            if inode := state.classes[inherits].inherits:
                 inherits = inode.strip()
             else:
                 break

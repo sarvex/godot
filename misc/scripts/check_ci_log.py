@@ -37,10 +37,12 @@ if (
 # so searching for 5 element - "#4 0x" - should correctly detect the vast
 # majority of memory leaks
 
-if file_contents.find("ERROR: LeakSanitizer:") != -1:
-    if file_contents.find("#4 0x") != -1:
-        print("ERROR: Memory leak was found")
-        sys.exit(53)
+if (
+    file_contents.find("ERROR: LeakSanitizer:") != -1
+    and file_contents.find("#4 0x") != -1
+):
+    print("ERROR: Memory leak was found")
+    sys.exit(53)
 
 # It may happen that Godot detects leaking nodes/resources and removes them, so
 # this possibility should also be handled as a potential error, even if

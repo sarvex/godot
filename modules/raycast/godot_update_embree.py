@@ -262,4 +262,4 @@ shutil.rmtree("embree-tmp")
 subprocess.run(["git", "restore", "embree/patches"])
 
 for patch in os.listdir("embree/patches"):
-    subprocess.run(["git", "apply", "embree/patches/" + patch])
+    subprocess.run(["git", "apply", f"embree/patches/{patch}"])

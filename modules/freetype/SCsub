@@ -74,7 +74,7 @@ if env["builtin_freetype"]:
         ]
         thirdparty_sources += [thirdparty_brotli_dir + file for file in thirdparty_brotli_sources]
         env_freetype.Append(CPPDEFINES=["FT_CONFIG_OPTION_USE_BROTLI"])
-        env_freetype.Prepend(CPPPATH=[thirdparty_brotli_dir + "include"])
+        env_freetype.Prepend(CPPPATH=[f"{thirdparty_brotli_dir}include"])
 
     if env.get("use_ubsan") or env.get("use_asan") or env.get("use_tsan") or env.get("use_lsan") or env.get("use_msan"):
         env_freetype.Append(CPPDEFINES=["BROTLI_BUILD_PORTABLE"])
@@ -85,9 +85,9 @@ if env["builtin_freetype"]:
         # Globally too, as freetype is used in scene (see bottom)
         env.Append(CCFLAGS=["/FI", '"modules/freetype/uwpdef.h"'])
 
-    env_freetype.Prepend(CPPPATH=[thirdparty_dir + "/include"])
+    env_freetype.Prepend(CPPPATH=[f"{thirdparty_dir}/include"])
     # Also needed in main env for scene/
-    env.Prepend(CPPPATH=[thirdparty_dir + "/include"])
+    env.Prepend(CPPPATH=[f"{thirdparty_dir}/include"])
 
     env_freetype.Append(CPPDEFINES=["FT2_BUILD_LIBRARY", "FT_CONFIG_OPTION_USE_PNG", "FT_CONFIG_OPTION_SYSTEM_ZLIB"])
     if env.dev_build:
@@ -97,7 +97,7 @@ if env["builtin_freetype"]:
     if env["builtin_libpng"]:
         env_freetype.Prepend(CPPPATH=["#thirdparty/libpng"])
 
-    sfnt = thirdparty_dir + "src/sfnt/sfnt.c"
+    sfnt = f"{thirdparty_dir}src/sfnt/sfnt.c"
     # Must be done after all CPPDEFINES are being set so we can copy them.
     if env["platform"] == "web":
         # Forcibly undefine this macro so SIMD is not used in this file,

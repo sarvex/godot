@@ -22,8 +22,7 @@ def can_build():
     if os.name != "posix" or sys.platform == "darwin":
         return False
 
-    pkgconf_error = os.system("pkg-config --version > /dev/null")
-    if pkgconf_error:
+    if pkgconf_error := os.system("pkg-config --version > /dev/null"):
         print("Error: pkg-config not found. Aborting.")
         return False
 

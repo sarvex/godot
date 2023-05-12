@@ -93,7 +93,7 @@ def generate_version(argcount, const=False, returns=False):
     callptrargsptr = ""
     if argcount > 0:
         argtext += ", "
-        callsiargs = "Variant vargs[" + str(argcount) + "]={"
+        callsiargs = f"Variant vargs[{str(argcount)}" + "]={"
         callsiargptrs = "\t\tconst Variant *vargptrs[" + str(argcount) + "]={"
         callptrargsptr = "\t\tGDExtensionConstTypePtr argptrs[" + str(argcount) + "]={"
     callptrargs = ""
@@ -105,14 +105,15 @@ def generate_version(argcount, const=False, returns=False):
             callsiargptrs += ", "
             callptrargs += "\t\t"
             callptrargsptr += ", "
-        argtext += "m_type" + str(i + 1)
-        callargtext += "m_type" + str(i + 1) + " arg" + str(i + 1)
-        callsiargs += "Variant(arg" + str(i + 1) + ")"
-        callsiargptrs += "&vargs[" + str(i) + "]"
+        argtext += f"m_type{str(i + 1)}"
+        callargtext += f"m_type{str(i + 1)} arg{str(i + 1)}"
+        callsiargs += f"Variant(arg{str(i + 1)})"
+        callsiargptrs += f"&vargs[{str(i)}]"
         callptrargs += (
-            "PtrToArg<m_type" + str(i + 1) + ">::EncodeT argval" + str(i + 1) + " = arg" + str(i + 1) + ";\\\n"
+            f"PtrToArg<m_type{str(i + 1)}>::EncodeT argval{str(i + 1)} = arg{str(i + 1)}"
+            + ";\\\n"
         )
-        callptrargsptr += "&argval" + str(i + 1)
+        callptrargsptr += f"&argval{str(i + 1)}"
         method_info += "\tmethod_info.arguments.push_back(GetTypeInfo<m_type" + str(i + 1) + ">::get_class_info());\\\n"
         method_info += (
             "\tmethod_info.arguments_metadata.push_back(GetTypeInfo<m_type" + str(i + 1) + ">::METADATA);\\\n"
@@ -122,7 +123,7 @@ def generate_version(argcount, const=False, returns=False):
         callsiargs += "};\\\n"
         callsiargptrs += "};\\\n"
         s = s.replace("$CALLSIARGS", callsiargs + callsiargptrs)
-        s = s.replace("$CALLSIARGPASS", "(const Variant **)vargptrs," + str(argcount))
+        s = s.replace("$CALLSIARGPASS", f"(const Variant **)vargptrs,{str(argcount)}")
         callptrargsptr += "};\\\n"
         s = s.replace("$CALLPTRARGS", callptrargs + callptrargsptr)
         s = s.replace("$CALLPTRARGPASS", "reinterpret_cast<GDExtensionConstTypePtr*>(argptrs)")
@@ -166,7 +167,7 @@ def run(target, source, env):
 
     for i in range(max_versions + 1):
 
-        txt += "/* " + str(i) + " Arguments */\n\n"
+        txt += f"/* {str(i)}" + " Arguments */\n\n"
         txt += generate_version(i, False, False)
         txt += generate_version(i, False, True)
         txt += generate_version(i, True, False)

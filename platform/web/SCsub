@@ -52,7 +52,7 @@ for lib in sys_env["JS_LIBS"]:
 for js in sys_env["JS_PRE"]:
     sys_env.Append(LINKFLAGS=["--pre-js", js.abspath])
 for ext in sys_env["JS_EXTERNS"]:
-    sys_env["ENV"]["EMCC_CLOSURE_ARGS"] += " --externs " + ext.abspath
+    sys_env["ENV"]["EMCC_CLOSURE_ARGS"] += f" --externs {ext.abspath}"
 
 build = []
 build_targets = ["#bin/godot${PROGSUFFIX}.js", "#bin/godot${PROGSUFFIX}.wasm", "#bin/godot${PROGSUFFIX}.worker.js"]

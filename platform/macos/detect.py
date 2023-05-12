@@ -18,10 +18,7 @@ def get_name():
 
 
 def can_build():
-    if sys.platform == "darwin" or ("OSXCROSS_ROOT" in os.environ):
-        return True
-
-    return False
+    return sys.platform == "darwin" or "OSXCROSS_ROOT" in os.environ
 
 
 def get_opts():
@@ -129,11 +126,11 @@ def configure(env: "Environment"):
         if env["macports_clang"] != "no":
             mpprefix = os.environ.get("MACPORTS_PREFIX", "/opt/local")
             mpclangver = env["macports_clang"]
-            env["CC"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/clang"
-            env["CXX"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/clang++"
-            env["AR"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-ar"
-            env["RANLIB"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-ranlib"
-            env["AS"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-as"
+            env["CC"] = f"{mpprefix}/libexec/llvm-{mpclangver}/bin/clang"
+            env["CXX"] = f"{mpprefix}/libexec/llvm-{mpclangver}/bin/clang++"
+            env["AR"] = f"{mpprefix}/libexec/llvm-{mpclangver}/bin/llvm-ar"
+            env["RANLIB"] = f"{mpprefix}/libexec/llvm-{mpclangver}/bin/llvm-ranlib"
+            env["AS"] = f"{mpprefix}/libexec/llvm-{mpclangver}/bin/llvm-as"
         else:
             env["CC"] = "clang"
             env["CXX"] = "clang++"
@@ -145,14 +142,14 @@ def configure(env: "Environment"):
     else:  # osxcross build
         root = os.environ.get("OSXCROSS_ROOT", "")
         if env["arch"] == "arm64":
-            basecmd = root + "/target/bin/arm64-apple-" + env["osxcross_sdk"] + "-"
+            basecmd = f"{root}/target/bin/arm64-apple-" + env["osxcross_sdk"] + "-"
         else:
-            basecmd = root + "/target/bin/x86_64-apple-" + env["osxcross_sdk"] + "-"
+            basecmd = f"{root}/target/bin/x86_64-apple-" + env["osxcross_sdk"] + "-"
 
         ccache_path = os.environ.get("CCACHE")
         if ccache_path is None:
-            env["CC"] = basecmd + "cc"
-            env["CXX"] = basecmd + "c++"
+            env["CC"] = f"{basecmd}cc"
+            env["CXX"] = f"{basecmd}c++"
         else:
             # there aren't any ccache wrappers available for macOS cross-compile,
             # to enable caching we need to prepend the path to the ccache binary
@@ -181,22 +178,22 @@ def configure(env: "Environment"):
         env.extra_suffix += ".san"
         env.Append(CCFLAGS=["-DSANITIZERS_ENABLED"])
 
-        if env["use_ubsan"]:
-            env.Append(
-                CCFLAGS=[
-                    "-fsanitize=undefined,shift,shift-exponent,integer-divide-by-zero,unreachable,vla-bound,null,return,signed-integer-overflow,bounds,float-divide-by-zero,float-cast-overflow,nonnull-attribute,returns-nonnull-attribute,bool,enum,vptr,pointer-overflow,builtin"
-                ]
-            )
-            env.Append(LINKFLAGS=["-fsanitize=undefined"])
-            env.Append(CCFLAGS=["-fsanitize=nullability-return,nullability-arg,function,nullability-assign"])
+    if env["use_ubsan"]:
+        env.Append(
+            CCFLAGS=[
+                "-fsanitize=undefined,shift,shift-exponent,integer-divide-by-zero,unreachable,vla-bound,null,return,signed-integer-overflow,bounds,float-divide-by-zero,float-cast-overflow,nonnull-attribute,returns-nonnull-attribute,bool,enum,vptr,pointer-overflow,builtin"
+            ]
+        )
+        env.Append(LINKFLAGS=["-fsanitize=undefined"])
+        env.Append(CCFLAGS=["-fsanitize=nullability-return,nullability-arg,function,nullability-assign"])
 
-        if env["use_asan"]:
-            env.Append(CCFLAGS=["-fsanitize=address,pointer-subtract,pointer-compare"])
-            env.Append(LINKFLAGS=["-fsanitize=address"])
+    if env["use_asan"]:
+        env.Append(CCFLAGS=["-fsanitize=address,pointer-subtract,pointer-compare"])
+        env.Append(LINKFLAGS=["-fsanitize=address"])
 
-        if env["use_tsan"]:
-            env.Append(CCFLAGS=["-fsanitize=thread"])
-            env.Append(LINKFLAGS=["-fsanitize=thread"])
+    if env["use_tsan"]:
+        env.Append(CCFLAGS=["-fsanitize=thread"])
+        env.Append(LINKFLAGS=["-fsanitize=thread"])
 
     if env["use_coverage"]:
         env.Append(CCFLAGS=["-ftest-coverage", "-fprofile-arcs"])

@@ -7,7 +7,7 @@ thirdparty_dir = "#thirdparty/vulkan"
 thirdparty_volk_dir = "#thirdparty/volk"
 
 # Use bundled Vulkan headers
-env.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "/include"])
+env.Prepend(CPPPATH=[thirdparty_dir, f"{thirdparty_dir}/include"])
 
 if env["use_volk"]:
     env.AppendUnique(CPPDEFINES=["USE_VOLK"])
@@ -27,20 +27,20 @@ elif env["platform"] == "windows":
 # Build Vulkan memory allocator and volk
 env_thirdparty_vma = env.Clone()
 env_thirdparty_vma.disable_warnings()
-thirdparty_sources_vma = [thirdparty_dir + "/vk_mem_alloc.cpp"]
+thirdparty_sources_vma = [f"{thirdparty_dir}/vk_mem_alloc.cpp"]
 
 if env["use_volk"]:
     env_thirdparty_vma.AppendUnique(CPPDEFINES=["VMA_STATIC_VULKAN_FUNCTIONS=1"])
     env_thirdparty_volk = env.Clone()
     env_thirdparty_volk.disable_warnings()
 
-    thirdparty_sources_volk = [thirdparty_volk_dir + "/volk.c"]
+    thirdparty_sources_volk = [f"{thirdparty_volk_dir}/volk.c"]
     env_thirdparty_volk.add_source_files(thirdparty_obj, thirdparty_sources_volk)
 elif env["platform"] == "android":
     # Our current NDK version only provides old Vulkan headers,
     # so we have to limit VMA.
     env_thirdparty_vma.AppendUnique(CPPDEFINES=["VMA_VULKAN_VERSION=1000000"])
-elif env["platform"] == "macos" or env["platform"] == "ios":
+elif env["platform"] in ["macos", "ios"]:
     # MoltenVK supports only Vulkan 1.1 API, limit VMA to the same version.
     env_thirdparty_vma.AppendUnique(CPPDEFINES=["VMA_VULKAN_VERSION=1001000"])
 

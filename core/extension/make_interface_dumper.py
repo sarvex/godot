@@ -1,11 +1,10 @@
 def run(target, source, env):
     src = source[0]
     dst = target[0]
-    f = open(src, "r", encoding="utf-8")
-    g = open(dst, "w", encoding="utf-8")
-
-    g.write(
-        """/* THIS FILE IS GENERATED DO NOT EDIT */
+    with open(src, "r", encoding="utf-8") as f:
+        with open(dst, "w", encoding="utf-8") as g:
+            g.write(
+                """/* THIS FILE IS GENERATED DO NOT EDIT */
 #ifndef GDEXTENSION_INTERFACE_DUMP_H
 #define GDEXTENSION_INTERFACE_DUMP_H
 
@@ -17,13 +16,13 @@ def run(target, source, env):
 class GDExtensionInterfaceDump {
 	private:
         static constexpr char const *gdextension_interface_dump ="""
-    )
-    for line in f:
-        g.write('"' + line.rstrip().replace('"', '\\"') + '\\n"\n')
-    g.write(";\n")
+            )
+            for line in f:
+                g.write('"' + line.rstrip().replace('"', '\\"') + '\\n"\n')
+            g.write(";\n")
 
-    g.write(
-        """
+            g.write(
+                """
     public:
         static void generate_gdextension_interface_file(const String &p_path) {
             Ref<FileAccess> fa = FileAccess::open(p_path, FileAccess::WRITE);
@@ -37,9 +36,7 @@ class GDExtensionInterfaceDump {
 
 #endif // GDEXTENSION_INTERFACE_DUMP_H
 """
-    )
-    g.close()
-    f.close()
+            )
 
 
 if __name__ == "__main__":

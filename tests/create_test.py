@@ -103,10 +103,8 @@ TEST_CASE("[{name_pascal_case}] Example test case") {{
         print("Trying to insert include directive in test_main.cpp...")
         with open("test_main.cpp", "r") as file:
             contents = file.read()
-        match = re.search(r'#include "tests.*\n', contents)
-
-        if match:
-            new_string = contents[: match.start()] + f'#include "tests/{file_path}"\n' + contents[match.start() :]
+        if match := re.search(r'#include "tests.*\n', contents):
+            new_string = f'{contents[:match.start()]}#include "tests/{file_path}"\n{contents[match.start():]}'
 
             with open("test_main.cpp", "w") as file:
                 file.write(new_string)

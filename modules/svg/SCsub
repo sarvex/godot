@@ -55,20 +55,20 @@ thirdparty_sources = [
 
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-env_svg.Prepend(CPPPATH=[thirdparty_dir + "inc"])
+env_svg.Prepend(CPPPATH=[f"{thirdparty_dir}inc"])
 
 env_thirdparty = env_svg.Clone()
 env_thirdparty.disable_warnings()
 env_thirdparty.Prepend(
     CPPPATH=[
-        thirdparty_dir + "src/lib",
-        thirdparty_dir + "src/lib/sw_engine",
-        thirdparty_dir + "src/loaders/external_png",
-        thirdparty_dir + "src/loaders/jpg",
-        thirdparty_dir + "src/loaders/raw",
-        thirdparty_dir + "src/loaders/svg",
-        thirdparty_dir + "src/loaders/tvg",
-        thirdparty_dir + "src/savers/tvg",
+        f"{thirdparty_dir}src/lib",
+        f"{thirdparty_dir}src/lib/sw_engine",
+        f"{thirdparty_dir}src/loaders/external_png",
+        f"{thirdparty_dir}src/loaders/jpg",
+        f"{thirdparty_dir}src/loaders/raw",
+        f"{thirdparty_dir}src/loaders/svg",
+        f"{thirdparty_dir}src/loaders/tvg",
+        f"{thirdparty_dir}src/savers/tvg",
     ]
 )
 # Also requires libpng headers

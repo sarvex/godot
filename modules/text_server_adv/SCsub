@@ -23,7 +23,9 @@ def make_icu_data(target, source, env):
     f = open(source[0].srcnode().abspath, "rb")
     buf = f.read()
 
-    g.write('extern "C" U_EXPORT const size_t U_ICUDATA_SIZE = ' + str(len(buf)) + ";\n")
+    g.write(
+        f'extern "C" U_EXPORT const size_t U_ICUDATA_SIZE = {len(buf)}' + ";\n"
+    )
     g.write('extern "C" U_EXPORT const unsigned char U_ICUDATA_ENTRY_POINT[] = {\n')
     for i in range(len(buf)):
         g.write("\t" + str(buf[i]) + ",\n")
@@ -460,8 +462,15 @@ if env["builtin_icu4c"]:
     icu_data_name = "icudt72l.dat"
 
     if env.editor_build:
-        env_icu.Depends("#thirdparty/icu4c/icudata.gen.h", "#thirdparty/icu4c/" + icu_data_name)
-        env_icu.Command("#thirdparty/icu4c/icudata.gen.h", "#thirdparty/icu4c/" + icu_data_name, make_icu_data)
+        env_icu.Depends(
+            "#thirdparty/icu4c/icudata.gen.h",
+            f"#thirdparty/icu4c/{icu_data_name}",
+        )
+        env_icu.Command(
+            "#thirdparty/icu4c/icudata.gen.h",
+            f"#thirdparty/icu4c/{icu_data_name}",
+            make_icu_data,
+        )
         env_text_server_adv.Prepend(CPPPATH=["#thirdparty/icu4c/"])
     else:
         thirdparty_sources += ["icu_data/icudata_stub.cpp"]
@@ -483,14 +492,14 @@ if env["builtin_icu4c"]:
             "-DU_ENABLE_DYLOAD=0",
             "-DU_HAVE_LIB_SUFFIX=1",
             "-DU_LIB_SUFFIX_C_NAME=_godot",
-            "-DICU_DATA_NAME=" + icu_data_name,
+            f"-DICU_DATA_NAME={icu_data_name}",
         ]
     )
     env_text_server_adv.Append(
         CXXFLAGS=[
             "-DU_HAVE_LIB_SUFFIX=1",
             "-DU_LIB_SUFFIX_C_NAME=_godot",
-            "-DICU_DATA_NAME=" + icu_data_name,
+            f"-DICU_DATA_NAME={icu_data_name}",
         ]
     )
     if env.editor_build:

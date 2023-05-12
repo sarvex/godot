@@ -16,7 +16,7 @@ def parse_template(inherits, source, delimiter):
         "script": "",
         "space-indent": "4",
     }
-    meta_prefix = delimiter + " meta-"
+    meta_prefix = f"{delimiter} meta-"
     meta = ["name", "description", "version", "space-indent"]
 
     with open(source) as f:

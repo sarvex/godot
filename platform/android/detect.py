@@ -23,11 +23,15 @@ def can_build():
 
 def get_opts():
     return [
-        ("ANDROID_SDK_ROOT", "Path to the Android SDK", get_env_android_sdk_root()),
+        (
+            "ANDROID_SDK_ROOT",
+            "Path to the Android SDK",
+            get_env_android_sdk_root(),
+        ),
         (
             "ndk_platform",
-            'Target platform (android-<api>, e.g. "android-' + str(get_min_target_api()) + '")',
-            "android-" + str(get_min_target_api()),
+            f'Target platform (android-<api>, e.g. "android-{str(get_min_target_api())}")',
+            f"android-{str(get_min_target_api())}",
         ),
     ]
 
@@ -79,14 +83,14 @@ def install_ndk_if_needed(env):
     sdk_root = env["ANDROID_SDK_ROOT"]
     if not os.path.exists(get_android_ndk_root(env)):
         extension = ".bat" if os.name == "nt" else ""
-        sdkmanager = sdk_root + "/cmdline-tools/latest/bin/sdkmanager" + extension
+        sdkmanager = f"{sdk_root}/cmdline-tools/latest/bin/sdkmanager{extension}"
         if os.path.exists(sdkmanager):
             # Install the Android NDK
             print("Installing Android NDK...")
-            ndk_download_args = "ndk;" + get_ndk_version()
+            ndk_download_args = f"ndk;{get_ndk_version()}"
             subprocess.check_call([sdkmanager, ndk_download_args])
         else:
-            print("Cannot find " + sdkmanager)
+            print(f"Cannot find {sdkmanager}")
             print(
                 "Please ensure ANDROID_SDK_ROOT is correct and cmdline-tools are installed, or install NDK version "
                 + get_ndk_version()
@@ -101,8 +105,7 @@ def configure(env: "Environment"):
     supported_arches = ["x86_32", "x86_64", "arm32", "arm64"]
     if env["arch"] not in supported_arches:
         print(
-            'Unsupported CPU architecture "%s" for Android. Supported architectures are: %s.'
-            % (env["arch"], ", ".join(supported_arches))
+            f'Unsupported CPU architecture "{env["arch"]}" for Android. Supported architectures are: {", ".join(supported_arches)}.'
         )
         sys.exit()
 
@@ -111,7 +114,7 @@ def configure(env: "Environment"):
             "WARNING: minimum supported Android target api is %d. Forcing target api %d."
             % (get_min_target_api(), get_min_target_api())
         )
-        env["ndk_platform"] = "android-" + str(get_min_target_api())
+        env["ndk_platform"] = f"android-{str(get_min_target_api())}"
 
     install_ndk_if_needed(env)
     ndk_root = env["ANDROID_NDK_ROOT"]
@@ -162,14 +165,14 @@ def configure(env: "Environment"):
         else:
             host_subpath = "windows"
 
-    toolchain_path = ndk_root + "/toolchains/llvm/prebuilt/" + host_subpath
-    compiler_path = toolchain_path + "/bin"
+    toolchain_path = f"{ndk_root}/toolchains/llvm/prebuilt/{host_subpath}"
+    compiler_path = f"{toolchain_path}/bin"
 
-    env["CC"] = compiler_path + "/clang"
-    env["CXX"] = compiler_path + "/clang++"
-    env["AR"] = compiler_path + "/llvm-ar"
-    env["RANLIB"] = compiler_path + "/llvm-ranlib"
-    env["AS"] = compiler_path + "/clang"
+    env["CC"] = f"{compiler_path}/clang"
+    env["CXX"] = f"{compiler_path}/clang++"
+    env["AR"] = f"{compiler_path}/llvm-ar"
+    env["RANLIB"] = f"{compiler_path}/llvm-ranlib"
+    env["AS"] = f"{compiler_path}/clang"
 
     # Disable exceptions on template builds
     if not env.editor_build:

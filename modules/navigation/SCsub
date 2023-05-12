@@ -27,7 +27,7 @@ if env["builtin_recastnavigation"]:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_navigation.Prepend(CPPPATH=[thirdparty_dir + "Include"])
+    env_navigation.Prepend(CPPPATH=[f"{thirdparty_dir}Include"])
 
     env_thirdparty = env_navigation.Clone()
     env_thirdparty.disable_warnings()

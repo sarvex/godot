@@ -19,8 +19,8 @@ icon_sources = Glob("*.svg")
 # Module icons
 for path in env.module_icons_paths:
     if not os.path.isabs(path):
-        icon_sources += Glob("#" + path + "/*.svg")  # Built-in.
+        icon_sources += Glob(f"#{path}/*.svg")
     else:
-        icon_sources += Glob(path + "/*.svg")  # Custom.
+        icon_sources += Glob(f"{path}/*.svg")
 
 env.Alias("editor_icons", [env.MakeEditorIconsBuilder("#editor/editor_icons.gen.h", icon_sources)])
